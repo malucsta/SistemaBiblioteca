@@ -1,2 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using SistemaBiblioteca.Usuario;
+
+var professor = new Professor(1, "Ana");
+professor.Notificar();
+professor.Notificar();
+professor.Notificar();
