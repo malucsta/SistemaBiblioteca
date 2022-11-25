@@ -50,7 +50,7 @@ namespace SistemaBiblioteca.Usuario
         public Usuario getUsuario(int codigoUsuario) { }
         public int getNotificacoes(int codigoProfessor) { }
 
-        public void adicionaObservavel(int codigoUsuario, int codigoLivro)
+        public void adicionarObservavel(int codigoUsuario, int codigoLivro)
         {
             var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
             var livroAtual = this.Usuarios.FindAll(livro => livro.codigo == codigoLivro);
