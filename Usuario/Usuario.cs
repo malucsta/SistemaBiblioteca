@@ -4,6 +4,8 @@
     {
         public int Codigo { get; set; }
         public string Nome { get; set; }
+        public string tipo { get; set; }
+        public int limiteEmprestimos { get; set; }
         public List<Reserva> reservas { get; set; }
         public List<Emprestimo> emprestimos { get; set; }
 
