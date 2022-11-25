@@ -4,65 +4,72 @@ namespace SistemaBiblioteca.Usuario
 {
     public class Biblioteca
     {
-        public Livro Livros { get; set; };
-        public Usuario Usuarios { get; set; };
-        public Exemplar Exemplares { get; set; };
+        public Livro Livros { get; set; }
+        public List<Usuario> Usuarios { get; set; }
+        public Exemplar Exemplares { get; set; }
 
-        public Biblioteca(list<Livro> livros, list<Usuario> usuarios, list<Exemplar> exemplares) {
-            Livros = livros;
-            Usuarios = this.FormatarUsuarios(usuarios);
-            Exemplares = exemplares;
-        };
+        public Biblioteca()
+        {
+            InicializaLivros();
+            InicializaUsuarios();
+            InicializaEmprestimos();
+        }
 
 
-        public string Emprestar(int codUsuario, int codigoLivro) 
+        public string Emprestar(int codUsuario, int codigoLivro)
         {
             var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codUsuario);
 
             var usuarioAtualizado = usuarioAtual.Emprestar(codigoLivro);
             this.Usuarios.Remove(usuarioAtual);
             this.Usuarios.Add(usuarioAtualizado);
-        };
+        }
 
 
         public string Reservar(int codUsuario, int codigoLivro)
         {
             var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codUsuario);
-            
+
             var usuarioAtualizado = usuarioAtual.Reservar(codigoLivro);
             this.Usuarios.Remove(usuarioAtual);
             this.Usuarios.Add(usuarioAtualizado);
-        };
+        }
 
 
         public string Devolver(int codUsuario, int codigoLivro)
         {
             var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codUsuario);
-            
+
             var usuarioAtualizado = usuarioAtual.Devolver(codigoLivro);
             this.Usuarios.Remove(usuarioAtual);
             this.Usuarios.Add(usuarioAtualizado);
-        };
-        public string getLivros();
-        public list<Emprestimo> getEmprestimos();
-        public Usuario getUsuario(int codigoUsuario);
-        public int getNotificacoes(int codigoProfessor);
+        }
+
+        public string getLivros() { return "livros"; }
+        public list<Emprestimo> getEmprestimos() { }
+        public Usuario getUsuario(int codigoUsuario) { }
+        public int getNotificacoes(int codigoProfessor) { }
 
 
-        public list<Usuario> FormatarUsuarios(list<Usuario> usuarios)
+        public void InicializaUsuarios()
         {
-            return usuarios.Select(usuario => {
-            if (usuario.tipo == 'Aluno de Graduação') {
-                usuario = new AlunoGrad(codUsuario, usuario.nome);
-            }
-            if (usuario.tipo == 'Aluno de Pós-graduação') {
-                usuario = new AlunoPosGrad(codUsuario, usuario.nome);
-            }
-            if (usuario.tipo == 'Professor') {
-                usuario = new Professor(codUsuario, usuario.nome);
-            }
-            }).ToArray();
+            List<Usuario> usuariosBiblioteca = new List<Usuario>();
+            usuariosBiblioteca.Add(new AlunoGrad(123, "João da Silva"));
+            usuariosBiblioteca.Add(new AlunoPosGrad(456, "Luiz Fernando Rodrigues"));
+            usuariosBiblioteca.Add(new AlunoGrad(789, "Pedro Paulo"));
+            usuariosBiblioteca.Add(new Professor(100, "Carlos Lucena"));
 
-        };
+            Usuarios = usuariosBiblioteca;
+        }
+
+        public void InicializaLivros()
+        {
+            //todo: implementar a inicialização dos livros
+        }
+
+        public void InicializaEmprestimos()
+        {
+            //todo: implementar a inicialização dos emprestimos
+        }
     }
 }
