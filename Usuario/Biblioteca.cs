@@ -4,7 +4,7 @@ namespace SistemaBiblioteca.Usuario
 {
     public class Biblioteca
     {
-        public Livro Livros { get; set; }
+        public List<Livro> Livros { get; set; }
         public List<Usuario> Usuarios { get; set; }
         public Exemplar Exemplares { get; set; }
 
@@ -16,9 +16,9 @@ namespace SistemaBiblioteca.Usuario
         }
 
 
-        public string Emprestar(int codUsuario, int codigoLivro)
+        public string Emprestar(int codigoUsuario, int codigoLivro)
         {
-            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codUsuario);
+            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
 
             var usuarioAtualizado = usuarioAtual.Emprestar(codigoLivro);
             this.Usuarios.Remove(usuarioAtual);
@@ -26,9 +26,9 @@ namespace SistemaBiblioteca.Usuario
         }
 
 
-        public string Reservar(int codUsuario, int codigoLivro)
+        public string Reservar(int codigoUsuario, int codigoLivro)
         {
-            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codUsuario);
+            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
 
             var usuarioAtualizado = usuarioAtual.Reservar(codigoLivro);
             this.Usuarios.Remove(usuarioAtual);
@@ -36,9 +36,9 @@ namespace SistemaBiblioteca.Usuario
         }
 
 
-        public string Devolver(int codUsuario, int codigoLivro)
+        public string Devolver(int codigoUsuario, int codigoLivro)
         {
-            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codUsuario);
+            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
 
             var usuarioAtualizado = usuarioAtual.Devolver(codigoLivro);
             this.Usuarios.Remove(usuarioAtual);
@@ -49,6 +49,18 @@ namespace SistemaBiblioteca.Usuario
         public list<Emprestimo> getEmprestimos() { }
         public Usuario getUsuario(int codigoUsuario) { }
         public int getNotificacoes(int codigoProfessor) { }
+
+        public void adicionaObservavel(int codigoUsuario, int codigoLivro)
+        {
+            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
+            var livroAtual = this.Usuarios.FindAll(livro => livro.codigo == codigoLivro);
+            
+            this.Usuarios.Remove(usuarioAtual);
+
+            usuarioAtual.AddObservable(codigoLivro);
+            
+            this.Usuarios.Add(usuarioAtual);
+        }
 
 
         public void InicializaUsuarios()

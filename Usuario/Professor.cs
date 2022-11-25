@@ -21,6 +21,11 @@
             Console.WriteLine($"Professor(a) {Nome} tem {NotificacoesRecebidas} notificações"); 
         }
 
+        public AddObservable(Livro livro)
+        {
+            this.livrosObservados.Add(livro)
+        }
+
         public override string Reservar()
         {
             return "Livro Reservado";
