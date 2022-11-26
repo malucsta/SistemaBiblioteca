@@ -18,31 +18,57 @@ namespace SistemaBiblioteca.Usuario
 
         public string Emprestar(int codigoUsuario, int codigoLivro)
         {
-            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
+            
+            var livroAtual = Livros.FindAll(livro => livro.codigo == codigoLivro)[0];
+            var exemplarAtual = Exemplares.FindAll(exemplar => exemplar.CodigoLivro == codigoLivro && exemplar.Status == 'Disponivel'); 
+            
+            if (exemplarAtual.Length < 1)
+            {
+                return 'Nenhum Exemplar disponível!';
+            }
+            
+            var usuarioAtual = Usuarios.FindAll(usuario => usuario.Codigo == codigoUsuario);
+            
+            Usuarios.Remove(usuarioAtual);
+            usuarioAtual.Emprestar(livroAtual, exemplarAtual);
+            Usuarios.Add(usuarioAtual);
 
-            var usuarioAtualizado = usuarioAtual.Emprestar(codigoLivro);
-            this.Usuarios.Remove(usuarioAtual);
-            this.Usuarios.Add(usuarioAtualizado);
+
+            Exemplares.Remove(exemplarAtual[0]);
+            exemplarAtual.Status = 'Indisponivel';
+            Exemplares.Add(exemplarAtual);
         }
 
 
         public string Reservar(int codigoUsuario, int codigoLivro)
         {
-            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
+            var usuarioAtual = Usuarios.FindAll(usuario => usuario.Codigo == codigoUsuario);
+            var livroAtual = Livros.FindAll(livro => livro.codigo == codigoLivro);
+            Reserva reserva = new Reserva(codigoLivro, codigoUsuario, DateTime.now);
 
-            var usuarioAtualizado = usuarioAtual.Reservar(codigoLivro);
-            this.Usuarios.Remove(usuarioAtual);
-            this.Usuarios.Add(usuarioAtualizado);
+            var usuarioAtualizado = usuarioAtual.Reservar(reserva);
+            Usuarios.Remove(usuarioAtual);
+            Usuarios.Add(usuarioAtualizado);
+
+            Livros.Remove(livroAtual);
+            
+            List<Usuario> usuariosModificados = livroAtual.AddReserva(reserva, Usuarios);
+            
+            Livros.Add(livroAtualizado);
+
+            Usuarios = usuariosModificados;
+
+            
         }
 
 
         public string Devolver(int codigoUsuario, int codigoLivro)
         {
-            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
+            var usuarioAtual = Usuarios.FindAll(usuario => usuario.Codigo == codigoUsuario);
 
             var usuarioAtualizado = usuarioAtual.Devolver(codigoLivro);
-            this.Usuarios.Remove(usuarioAtual);
-            this.Usuarios.Add(usuarioAtualizado);
+            Usuarios.Remove(usuarioAtual);
+            Usuarios.Add(usuarioAtualizado);
         }
 
         public string getLivros() { return "livros"; }
@@ -52,14 +78,14 @@ namespace SistemaBiblioteca.Usuario
 
         public void adicionarObservavel(int codigoUsuario, int codigoLivro)
         {
-            var usuarioAtual = this.Usuarios.FindAll(usuario => usuario.codigo == codigoUsuario);
-            var livroAtual = this.Usuarios.FindAll(livro => livro.codigo == codigoLivro);
+            var usuarioAtual = Usuarios.FindAll(usuario => usuario.Codigo == codigoUsuario);
+            var livroAtual = Usuarios.FindAll(livro => livro.codigo == codigoLivro);
             
-            this.Usuarios.Remove(usuarioAtual);
+            Usuarios.Remove(usuarioAtual);
 
             usuarioAtual.AddObservable(codigoLivro);
             
-            this.Usuarios.Add(usuarioAtual);
+            Usuarios.Add(usuarioAtual);
         }
 
 

@@ -2,9 +2,9 @@ namespace SistemaBiblioteca.Usuario
 {
     public class Reserva
     {
-        public string codigoLivro { get; set; }
-        public string codigoUsuario { get; set; }
-        public DateTime solicitacaoData { get; set; }
+        public string CodigoLivro { get; set; }
+        public string CodigoUsuario { get; set; }
+        public DateTime SolicitacaoData { get; set; }
 
     }
 
