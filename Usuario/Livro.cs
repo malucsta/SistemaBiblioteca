@@ -29,9 +29,9 @@ namespace SistemaBiblioteca.Usuario
         {   
             if(Reservas.Length >= 3)
             {
-                return ('Reserva negada! Já existem muitas reservas em andamento.', usuarios)
+                return ("Reserva negada! Já existem muitas reservas em andamento.", usuarios)
             }
-            
+
             Reservas.Add(reserva);
 
             if(Reservas.Length > 0 && Reservas.Length < 3)
@@ -48,7 +48,7 @@ namespace SistemaBiblioteca.Usuario
                 }
             }
 
-            return ('Reserva realizada com sucesso!', usuarios);
+            return ("Reserva realizada com sucesso!", usuarios);
 
             
         }

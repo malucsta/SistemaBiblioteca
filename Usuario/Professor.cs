@@ -23,7 +23,7 @@
 
          private override Tuple<bool, string> PodePegarEmprestimo()
         {
-            return (true, 'Tudo OK!')
+            return (true, "Tudo OK!")
         }
 
         public AddObservable(Livro livro)

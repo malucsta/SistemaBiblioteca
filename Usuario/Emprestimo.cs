@@ -2,17 +2,18 @@ namespace SistemaBiblioteca.Usuario
 {
     public class Emprestimo
     {
-        public string CodigoLivro { get; set; }
-        public string CodigoUsuario { get; set; }
+        public int CodigoLivro { get; set; }
+        public int CodigoExemplar { get; set; }
+        public int CodigoUsuario { get; set; }
         public string Status { get; set; }
         public DateTime SolicitacaoData { get; set; }
         public DateTime DevolucaoData { get; set; }
 
-         public Emprestimo (string codigoLivro, string codigoUsuario, DateTime devolucaoData)
+         public Emprestimo (int codigoLivro, int codigoExemplar, int codigoUsuario, DateTime devolucaoData)
         {
             CodigoLivro = codigoLivro;
             CodigoUsuario = codigoUsuario;
-            Status = 'ativo';
+            Status = "ativo";
             SolicitacaoData = DateTime.now;
             DevolucaoData = devolucaoData;
         }

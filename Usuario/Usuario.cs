@@ -13,19 +13,20 @@
             Nome = nome;
         }
 
-        public string Emprestar(Livro livro, List<Exemplar> exemplares)
+        public Tuple<bool, string, Emprestimo> Emprestar(Livro livro, List<Exemplar> exemplares)
         {
             var reservasDoLivro = Reservas.FindAll(reserva => reserva.CodigoLivro == livro.Codigo);
             var emprestimosDoLivro = Emprestimos.FindAll(emprestimo => emprestimo.CodigoLivro == livro.Codigo);
+            (Exemplar exemplar) = exemplares; 
 
             if(emprestimosDoLivro.Length > 1)
             {
-                return 'Emprestimo negado! Já existe um empréstimo desse livro.';
+                return (false, $"Emprestimo negado para o usuario ${Nome}! Já existe um empréstimo para o livro {livro.Nome}.");
             }
-            var (podePegarEmprestimo, motivo) = this.PodePegarEmprestimo(livro, exemplar);
+            var (podePegarEmprestimo, motivo) = this.PodePegarEmprestimo(livro, exemplares);
             if(!podePegarEmprestimo)
             {
-                return motivo;
+                return (false, motivo);
             }
 
 
@@ -36,7 +37,7 @@
 
                 if(comparacao < 0)
                 {
-                    return 'Emprestimo negado! Existem emprestimos não entregues.'
+                    return (false, $"Emprestimo do livro {livro.Nome} negado para o usuario ${Nome}! Existem emprestimos não entregues.");
                 }
             }
 
@@ -46,15 +47,28 @@
             }
 
             DateTime devolucaoData = this.CalcularDataDevolucao();
-            Emprestimo emprestimo = new Emprestimo(livro.Codigo, Codigo, devolucaoData)
+            Emprestimo emprestimo = new Emprestimo(livro.Codigo, exemplar.CodigoExemplar, Codigo, devolucaoData)
             Emprestimos.Add(emprestimo);
-            return 'Emprestimo realizado com sucesso'            
+            return (true, $"Emprestimo do livro {livro.Nome} realizado com sucesso para o usuario ${Nome}!", emprestimo);      
             
         }
 
-        public abstract string Emprestar();
+        public Tuple<bool, string, Emprestimo> Devolver(Livro livro)
+        {
+            var emprestimos = Emprestimos.FindAll(emprestimo => emprestimo.CodigoLivro == livro.Codigo && emprestimo.Status == "ativo");
+            if(emprestimos.Length < 1)
+            {
+                return (false, $"Devolução negada para o usuario ${Nome}! Não exitem empréstimos ativos para o livro {livro.Nome}");
+            }
+
+            (Emprestimo emprestimoAtual) = emprestimos;
+            Emprestimos.Remove(emprestimoAtual);
+            emprestimoAtual.Status = "inativo";
+            Emprestimos.Add(emprestimoAtual);
+            return (true, $"Devolução realizada para o usuario ${Nome}! O livro {livro.Nome} foi devolvido!", emprestimoAtual);
+        }
+
         public abstract string Reservar();
-        public abstract string Devolver();
         private abstract DateTime CalcularDataDevolucao();
         private abstract Tuple<bool, string> PodePegarEmprestimo(Livro livro, List<Exemplar> exemplar);
     }

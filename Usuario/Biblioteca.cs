@@ -20,23 +20,37 @@ namespace SistemaBiblioteca.Usuario
         {
             
             var (livroAtual) = Livros.FindAll(livro => livro.Codigo == codigoLivro);
-            var exemplarAtual = Exemplares.FindAll(exemplar => exemplar.CodigoLivro == codigoLivro && exemplar.Status == 'Disponivel'); 
+            var exemplarAtual = Exemplares.FindAll(exemplar => exemplar.CodigoLivro == codigoLivro && exemplar.Status == "Disponivel"); 
             
             if (exemplarAtual.Length < 1)
             {
-                return 'Nenhum Exemplar disponível!';
+                return "Nenhum Exemplar disponível!";
             }
             
             var usuarioAtual = Usuarios.FindAll(usuario => usuario.Codigo == codigoUsuario);
             
             Usuarios.Remove(usuarioAtual);
-            usuarioAtual.Emprestar(livroAtual, exemplarAtual);
+            (bool emprestadoComSucesso, string mensagem, Emprestimo emprestimo) = usuarioAtual.Emprestar(livroAtual, exemplarAtual);
             Usuarios.Add(usuarioAtual);
 
+            if(emprestadoComSucesso)
+            {
+                Exemplares.Remove(exemplarAtual[0]);
+                exemplarAtual[0].Emprestar(emprestimo);
+                Exemplares.Add(exemplarAtual[0]);
 
-            Exemplares.Remove(exemplarAtual[0]);
-            exemplarAtual[0].Emprestar();
-            Exemplares.Add(exemplarAtual[0]);
+                var reservas = livroAtual.Reservas.FindAll(reserva => reserva.CodigoUsuario == codigoUsuario);
+                if(reservas.Length > 0)
+                {
+                    Livros.Remove(livroAtual);
+                    livroAtual.Reservas.Remove(reservas[0]);
+                    Livros.Add(livroAtual);
+                }
+
+                return mensagem;
+            }            
+
+            return mensagem;
         }
 
 
@@ -66,14 +80,51 @@ namespace SistemaBiblioteca.Usuario
 
         public string Devolver(int codigoUsuario, int codigoLivro)
         {
-            var usuarioAtual = Usuarios.FindAll(usuario => usuario.Codigo == codigoUsuario);
-
-            var usuarioAtualizado = usuarioAtual.Devolver(codigoLivro);
+            var (usuarioAtual) = Usuarios.FindAll(usuario => usuario.Codigo == codigoUsuario);
+            var (exemplarAtual) = Exemplares.FindAll(exemplar => exemplar.CodigoExemplar == codigoExemplar);
+            var (livroAtual) = Livros.FindAll(livro => livro.Codigo == exemplarAtual.CodigoLivro);
+            
             Usuarios.Remove(usuarioAtual);
+            (bool devolvidoComSucesso, string mensagem, Emprestimo emprestimo) = usuarioAtual.Devolver(exemplarAtual, livroAtual.Nome);
+            if(devolvidoComSucesso)
+            {   
+                Exemplares.Remove(exemplarAtual);
+                exemplarAtual.Devolver(emprestimo);
+                Exemplares.Add(exemplarAtual);
+
+                Usuarios.Add(usuarioAtualizado);
+                return mensagem;
+            }
+
             Usuarios.Add(usuarioAtualizado);
+
+            return mensagem;
         }
 
-        public string getLivros() { return "livros"; }
+        public string getLivros(int codigoLivro)
+        {
+            (Livro livro) = Livros.FindAll(livro => livro.Codigo == codigoLivro);
+            var exemplares = Exemplares.FindAll(exemplar => exemplar.CodigoLivro == codigoLivro);
+
+            List<ReservaView> nomeUsuariosReservas;
+            foreach (var reserva in livro.Reserva)
+            {
+                (Usuario usuarioReserva) = Usuarios.FindAll(usuario => usuario.Codigo == reserva.CodigoUsuario);
+                nomeUsuariosReservas.Add(new ReservaView(codigoLivro, reserva.CodigoUsuario, reserva.SolicitacaoData, usuarioReserva.Nome));
+            }
+
+            List<EmprestimoView> nomeUsuariosEmprestimos;
+            foreach (var exemplar in exemplares)
+            {
+                foreach (var emprestimo in exemplar.Emprestimos)
+                {
+                    (Usuario usuarioEmprestimo) = Usuarios.FindAll(usuario => usuario.Codigo == emprestimo.CodigoUsuario);
+                    nomeUsuariosEmprestimos.Add(new EmprestimoView(codigoLivro, exemplar.CodigoExemplar, emprestimo.CodigoUsuario, emprestimo.DevolucaoData, usuarioEmprestimo.Nome));
+
+                }
+            }
+            // Ai vc olha como fica o melhor retorno pra vc, pensei em criar uma classe pra esse retorno, mas acho que da pra retornar uma tupla com tudo junto tbm
+        }
         public list<Emprestimo> getEmprestimos() { }
         public Usuario getUsuario(int codigoUsuario) { }
         public int getNotificacoes(int codigoProfessor) { }
