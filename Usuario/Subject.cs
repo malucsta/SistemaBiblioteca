@@ -4,7 +4,6 @@ namespace SistemaBiblioteca.Usuario
     {
         public List<Usuario> UsuariosNotificaveis { get; set; }
 
-3w2
         public void AddObserver(Usuario usuario)
         {
             UsuariosNotificaveis.Add(usuario);

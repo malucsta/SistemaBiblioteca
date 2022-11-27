@@ -25,25 +25,30 @@ namespace SistemaBiblioteca.Usuario
 
 
 
-        public List<Usuario> AddReserva(Reserva reserva, List<Usuario> usuarios)
+        public Tuple<string, List<Usuario>> AddReserva(Reserva reserva, List<Usuario> usuarios)
         {   
+            if(Reservas.Length >= 3)
+            {
+                return ('Reserva negada! Já existem muitas reservas em andamento.', usuarios)
+            }
+            
             Reservas.Add(reserva);
 
-            if(Reservas.Length >= 2)
+            if(Reservas.Length > 0 && Reservas.Length < 3)
             {
               NotifyObservers();
 
               foreach (var usuarioNotificado in UsuariosNotificaveis)
                 {
-                    var usuarioA = usuarios.FindAll(usuario => usuario.Codigo == usuarioNotificado.Codigo);
+                    var usuarioAtual = usuarios.FindAll(usuario => usuario.Codigo == usuarioNotificado.Codigo);
                     usuarioNotificado.NotificacoesRecebidas = usuarioNotificado.NotificacoesRecebidas + usuarioA.NotificacoesRecebidas;
 
-                    usuarios.Remove(usuarioA);
+                    usuarios.Remove(usuarioAtual);
                     usuarios.Add(usuarioNotificado);
                 }
             }
 
-            return usuarios;
+            return ('Reserva realizada com sucesso!', usuarios);
 
             
         }
