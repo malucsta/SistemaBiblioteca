@@ -2,7 +2,7 @@ namespace SistemaBiblioteca.Usuario
 {
     public class Livro : Subject
     {
-        public string Codigo { get; set; }
+        public int Codigo { get; set; }
         public List<Reserva> Reservas { get; set; }
         public List<Usuario> UsuariosNotificaveis { get; set; }
         public string Nome { get; set; }
