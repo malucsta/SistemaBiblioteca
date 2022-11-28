@@ -33,5 +33,16 @@ namespace SistemaBiblioteca.Usuario
         {
             return Exemplares.Count > Emprestimos.Count;
         }
+
+        public void AdicionarExemplares(ref Exemplar exemplar)
+        {
+            Exemplares.Add(exemplar);
+            //Exemplares = exemplares;
+        }
+
+        public override string ToString()
+        {
+            return $"Livro {Codigo}, Nome: {Nome}";
+        }
     }
 }

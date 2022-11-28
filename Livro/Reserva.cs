@@ -11,5 +11,10 @@ namespace SistemaBiblioteca.Usuario
             CodigoUsuario = codigoUsuario;
         }
 
+        public override string ToString()
+        {
+            return $"==> Reserva do livro {CodigoLivro} para o usuário {CodigoUsuario}";
+        }
+
     }
 }

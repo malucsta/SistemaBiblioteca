@@ -14,12 +14,18 @@ namespace SistemaBiblioteca.Usuario
         public Emprestimo(int codigoLivro, int codigoExemplar, int codigoUsuario)
         {
             CodigoLivro = codigoLivro;
+            CodigoExemplar = codigoExemplar;
             CodigoUsuario = codigoUsuario;
             Status = EmprestimoStatus.Ativo;
             SolicitacaoData = DateTime.Now;
 
             //para simplificar, definimos que o período de um emprestimo é de 7 dias
             DevolucaoData = DateTime.Now.AddDays(7);
+        }
+
+        public override string ToString()
+        {
+            return $"Emprestimo do livro {CodigoLivro}, Exemplar {CodigoExemplar}, para o usuário {CodigoUsuario}";
         }
     }
 

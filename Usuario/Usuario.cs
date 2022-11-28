@@ -15,7 +15,7 @@ namespace SistemaBiblioteca.Usuario
             Nome = nome;
         }
 
-        public abstract string Emprestar(Livro livro);
+        public abstract string Emprestar(ref Livro livro, List<Exemplar> Exemplares);
         public string Reservar(Livro livro)
         {
             if (Reservas.Count < 3)
@@ -50,10 +50,11 @@ namespace SistemaBiblioteca.Usuario
             return reservasEmAberto.Count > 0 ? true : false;
         }
 
-        protected string? EmprestarLivro(Livro livro)
+        protected string? EmprestarLivro(ref Livro livro, List<Exemplar> Exemplares)
         {
+            var codigoLivro = livro.Codigo;
 
-            var exemplarDisponivel = livro.Exemplares.Find(exemplar => exemplar.CodigoLivro == livro.Codigo
+            var exemplarDisponivel = livro.Exemplares.Find(exemplar => exemplar.CodigoLivro == codigoLivro
                                                                        && exemplar.Status == EmprestimoStatus.Disponivel);
 
             if (exemplarDisponivel is null) return null;
@@ -65,20 +66,27 @@ namespace SistemaBiblioteca.Usuario
             this.Emprestimos.Add(emprestimo);
 
             //remove as reservas em aberto
-            var reservaEmAberto = livro.Reservas.Find(reserva => reserva.CodigoLivro == livro.Codigo && reserva.CodigoUsuario == Codigo);
+            var reservaEmAberto = livro.Reservas.Find(reserva => reserva.CodigoLivro == codigoLivro && reserva.CodigoUsuario == Codigo);
             if (reservaEmAberto is not null)
             {
                 livro.Reservas.Remove(reservaEmAberto);
-                var reservaDoUsuario = Reservas.Find(reserva => reserva.CodigoLivro == livro.Codigo);
+                var reservaDoUsuario = Reservas.Find(reserva => reserva.CodigoLivro == codigoLivro);
                 if (reservaDoUsuario is not null) Reservas.Remove(reservaDoUsuario);
             }
 
             //atualiza o status dos exemplares
             livro.Exemplares.Remove(exemplarDisponivel);
+            Exemplares.Remove(exemplarDisponivel);
             exemplarDisponivel.Status = EmprestimoStatus.Indisponivel;
+            Exemplares.Add(exemplarDisponivel);
             livro.Exemplares.Add(exemplarDisponivel);
 
             return "Empréstimo realizado com sucesso";
+        }
+
+        public override string ToString()
+        {
+            return $"Usuário {Codigo}, Nome: {Nome}";
         }
     }
 }

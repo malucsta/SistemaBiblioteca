@@ -6,9 +6,10 @@ namespace SistemaBiblioteca.Usuario
     {
         public Professor(int codigo, string nome) : base(codigo, nome) { }
 
-        public override string Emprestar(Livro livro)
+        public override string Emprestar(ref Livro livro, List<Exemplar> Exemplares)
         {
             string baseMotivo = "Reserva não pode ser realizada. Motivo:  ";
+            var codigoLivro = livro.Codigo;
 
             //se existem exemplares disponiveis
             if (!livro.PodeSerEmprestado())
@@ -18,7 +19,7 @@ namespace SistemaBiblioteca.Usuario
             if (Emprestimos.Any(emprestimo => emprestimo.DevolucaoData < DateTime.Now))
                 return baseMotivo + $"Existem empréstimos atrasados para o usuário {Codigo}";
 
-            var exemplarDisponivel = livro.Exemplares.Find(exemplar => exemplar.CodigoLivro == livro.Codigo
+            var exemplarDisponivel = livro.Exemplares.Find(exemplar => exemplar.CodigoLivro == codigoLivro
                                                                        && exemplar.Status == EmprestimoStatus.Disponivel);
 
             if (exemplarDisponivel is null) return baseMotivo + "Não há mais exemplares disponíveis";
@@ -27,6 +28,14 @@ namespace SistemaBiblioteca.Usuario
 
             livro.Emprestimos.Add(emprestimo);
             this.Emprestimos.Add(emprestimo);
+
+            //atualiza o status dos exemplares
+            livro.Exemplares.Remove(exemplarDisponivel);
+            Exemplares.Remove(exemplarDisponivel);
+            exemplarDisponivel.Status = EmprestimoStatus.Indisponivel;
+            Exemplares.Add(exemplarDisponivel);
+            livro.Exemplares.Add(exemplarDisponivel);
+
             return "Empréstimo realizado com sucesso";
         }
 

@@ -9,7 +9,7 @@ namespace SistemaBiblioteca.Usuario
         public List<Livro> Livros { get; set; } = new List<Livro>();
         public List<Usuario> Usuarios { get; set; } = new List<Usuario>();
         public List<Exemplar> Exemplares { get; set; } = new List<Exemplar>();
-        private static Biblioteca _instancia;
+        private static Biblioteca _instancia = new Biblioteca();
 
         private Biblioteca()
         {
@@ -46,7 +46,7 @@ namespace SistemaBiblioteca.Usuario
             if (usuario is null) return "Usuário não existe";
             if (livro is null) return "Livro não existe";
 
-            return usuario.Emprestar(livro);
+            return usuario.Emprestar(ref livro, Exemplares);
         }
 
 
@@ -115,7 +115,7 @@ namespace SistemaBiblioteca.Usuario
         }
 
 
-        public void InicializaUsuarios()
+        private void InicializaUsuarios()
         {
             List<Usuario> usuariosBiblioteca = new List<Usuario>();
             usuariosBiblioteca.Add(new AlunoGrad(123, "João da Silva"));
@@ -126,7 +126,7 @@ namespace SistemaBiblioteca.Usuario
             Usuarios = usuariosBiblioteca;
         }
 
-        public void InicializaLivros()
+        private void InicializaLivros()
         {
             List<Livro> livrosBiblioteca = new List<Livro>();
             livrosBiblioteca.Add(new Livro(100, "Eng de Software", "Addison", "Ian Sommervile", "6", "2000"));
@@ -137,20 +137,54 @@ namespace SistemaBiblioteca.Usuario
             livrosBiblioteca.Add(new Livro(301, "Software Metrics: ARigorous and Practical Approach", "Addison", "Ian Sommervile", "6", "2000"));
             livrosBiblioteca.Add(new Livro(400, "Design Patterns", "Addison", "Ian Sommervile", "6", "2000"));
             livrosBiblioteca.Add(new Livro(401, "UML Distilled", "Addison", "Ian Sommervile", "6", "2000"));
+
+            Livros = livrosBiblioteca;
         }
 
-        public void InicializaExemplares()
+        private void InicializaExemplares()
         {
             List<Exemplar> exemplaresBiblioteca = new List<Exemplar>();
-            exemplaresBiblioteca.Add(new Exemplar(100, 01, EmprestimoStatus.Disponivel));
-            exemplaresBiblioteca.Add(new Exemplar(100, 02, EmprestimoStatus.Disponivel));
-            exemplaresBiblioteca.Add(new Exemplar(101, 03, EmprestimoStatus.Disponivel));
-            exemplaresBiblioteca.Add(new Exemplar(200, 04, EmprestimoStatus.Disponivel));
-            exemplaresBiblioteca.Add(new Exemplar(201, 05, EmprestimoStatus.Disponivel));
-            exemplaresBiblioteca.Add(new Exemplar(300, 06, EmprestimoStatus.Disponivel));
-            exemplaresBiblioteca.Add(new Exemplar(300, 07, EmprestimoStatus.Disponivel));
-            exemplaresBiblioteca.Add(new Exemplar(400, 08, EmprestimoStatus.Disponivel));
-            exemplaresBiblioteca.Add(new Exemplar(400, 09, EmprestimoStatus.Disponivel));
+
+            var livro100 = GetLivro(100);
+            var exemplar1001 = new Exemplar(100, 01, EmprestimoStatus.Disponivel);
+            var exemplar1002 = new Exemplar(100, 02, EmprestimoStatus.Disponivel);
+            livro100.AdicionarExemplares(ref exemplar1001);
+            livro100.AdicionarExemplares(ref exemplar1002);
+            exemplaresBiblioteca.Add(exemplar1001);
+            exemplaresBiblioteca.Add(exemplar1002);
+
+            var livro101 = GetLivro(101);
+            var exemplar10103 = new Exemplar(101, 03, EmprestimoStatus.Disponivel);
+            livro101.AdicionarExemplares(ref exemplar10103);
+            exemplaresBiblioteca.Add(exemplar10103);
+
+            var livro200 = GetLivro(200);
+            var exemplar20004 = new Exemplar(200, 04, EmprestimoStatus.Disponivel);
+            livro200.AdicionarExemplares(ref exemplar20004);
+            exemplaresBiblioteca.Add(exemplar20004);
+
+            var livro201 = GetLivro(201);
+            var exemplar20105 = new Exemplar(201, 05, EmprestimoStatus.Disponivel);
+            livro200.AdicionarExemplares(ref exemplar20105);
+            exemplaresBiblioteca.Add(exemplar20105);
+
+            var livro300 = GetLivro(300);
+            var exemplar30006 = new Exemplar(300, 06, EmprestimoStatus.Disponivel);
+            var exemplar30007 = new Exemplar(300, 07, EmprestimoStatus.Disponivel);
+            livro300.AdicionarExemplares(ref exemplar30006);
+            livro300.AdicionarExemplares(ref exemplar30007);
+            exemplaresBiblioteca.Add(exemplar30006);
+            exemplaresBiblioteca.Add(exemplar30007);
+
+            var livro400 = GetLivro(400);
+            var exemplar40008 = new Exemplar(400, 08, EmprestimoStatus.Disponivel);
+            var exemplar40009 = new Exemplar(400, 09, EmprestimoStatus.Disponivel);
+            livro400.AdicionarExemplares(ref exemplar30006);
+            livro400.AdicionarExemplares(ref exemplar30007);
+            exemplaresBiblioteca.Add(exemplar40008);
+            exemplaresBiblioteca.Add(exemplar40009);
+
+            Exemplares = exemplaresBiblioteca;
         }
     }
 }
