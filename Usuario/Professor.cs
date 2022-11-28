@@ -42,7 +42,7 @@ namespace SistemaBiblioteca.Usuario
         public override void Notificar()
         {
             NotificacoesRecebidas++;
-            Console.WriteLine($"Professor(a) {Nome} tem {NotificacoesRecebidas} notificações");
+            Console.WriteLine($"Professor(a) {Nome} foi notificado");
         }
 
         public void ObservarLivro(Livro livro)

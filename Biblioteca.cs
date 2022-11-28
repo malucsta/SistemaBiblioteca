@@ -1,4 +1,5 @@
 using System.Linq;
+using SistemaBiblioteca.ConsoleHandler.Queries.Views;
 using SistemaBiblioteca.Livro;
 
 namespace SistemaBiblioteca.Usuario
@@ -37,7 +38,7 @@ namespace SistemaBiblioteca.Usuario
             return Livros.Find(livro => livro.Codigo == codigoLivro);
         }
 
-
+# region ações
         public string Emprestar(int codigoUsuario, int codigoLivro)
         {
             var usuario = GetUsuario(codigoUsuario);
@@ -76,32 +77,16 @@ namespace SistemaBiblioteca.Usuario
             var exemplar = livro.Exemplares.Find(exemplar => exemplar.CodigoExemplar == emprestimo.CodigoExemplar);
             if (exemplar is null) return $"Exemplar do livro em questão não existe para o usuário {usuario.Codigo}";
 
-            return usuario.Devolver(ref exemplar);
+            var retorno = usuario.Devolver(ref exemplar);
+
+            // if (retorno.Contains("devolvido com sucesso"))
+            // {
+            //     emprestimo.Status = EmprestimoStatus.Inativo;
+            //     exemplar.Status = EmprestimoStatus.Disponivel;
+            // }
+
+            return retorno;
         }
-
-        // public string GetLivros(int codigoLivro)
-        // {
-        //     var livro = GetLivro(codigoLivro);
-        //     var exemplares = Exemplares.FindAll(exemplar => exemplar.CodigoLivro == codigoLivro);
-
-        //     List<ReservaView> nomeUsuariosReservas;
-        //     foreach (var reserva in livro.Reserva)
-        //     {
-        //         (Usuario usuarioReserva) = Usuarios.FindAll(usuario => usuario.Codigo == reserva.CodigoUsuario);
-        //         nomeUsuariosReservas.Add(new ReservaView(codigoLivro, reserva.CodigoUsuario, reserva.SolicitacaoData, usuarioReserva.Nome));
-        //     }
-
-        //     List<EmprestimoView> nomeUsuariosEmprestimos;
-        //     foreach (var exemplar in exemplares)
-        //     {
-        //         foreach (var emprestimo in exemplar.Emprestimos)
-        //         {
-        //             (Usuario usuarioEmprestimo) = Usuarios.FindAll(usuario => usuario.Codigo == emprestimo.CodigoUsuario);
-        //             nomeUsuariosEmprestimos.Add(new EmprestimoView(codigoLivro, exemplar.CodigoExemplar, emprestimo.CodigoUsuario, emprestimo.DevolucaoData, usuarioEmprestimo.Nome));
-
-        //         }
-        //     }
-        // }
 
         public string? AcompanharLivro(int codigoUsuario, int codigoLivro)
         {
@@ -111,8 +96,111 @@ namespace SistemaBiblioteca.Usuario
             if (livro is null) return "Livro não encontrado";
 
             if (usuario is UsuarioObservador) livro.AddObserver((UsuarioObservador)usuario);
-            return null;
+            return $"Usuario {codigoUsuario} agora acompanha as reservas do livro {codigoLivro}";
         }
+#endregion
+
+        public string? GetDetalhesLivro(int codigoLivro)
+        {
+            var livro = GetLivro(codigoLivro);
+            if (livro is null) return "Livro não existe";
+
+            var codigosUsuariosReservas = livro.Reservas.Select(res => res.CodigoUsuario); 
+            var nomeUsuariosReservasEmAberto = new List<string>();
+
+            foreach (var codigo in codigosUsuariosReservas)
+            {
+                nomeUsuariosReservasEmAberto.Add(GetUsuario(codigo).Nome); 
+            }
+
+            var exemplares = Exemplares.FindAll(exemplar => exemplar.CodigoLivro == codigoLivro); 
+
+            var emprestimosDoLivro = GetEmprestimosDoLivro(codigoLivro);
+
+            var emprestimosView =
+                from emprestimo in emprestimosDoLivro
+                join usuario in Usuarios on emprestimo.CodigoUsuario equals usuario.Codigo
+                select new EmprestimoView
+                {
+                    CodigoExemplar = emprestimo.CodigoExemplar,
+                    CodigoUsuario = emprestimo.CodigoUsuario,
+                    CodigoLivro = emprestimo.CodigoLivro,
+                    SolicitacaoData = emprestimo.SolicitacaoData,
+                    DevolucaoData = emprestimo.DevolucaoData,
+                    NomeUsuario = usuario.Nome
+                };
+
+            var detalhes = new DetalhesLivroView
+            {
+                Titulo = livro.Nome,
+                QuantidadeReservas = codigosUsuariosReservas.Count(),
+                NomeUsuariosReservasEmAberto = nomeUsuariosReservasEmAberto,
+                Emprestimos = emprestimosView.ToList(),
+                Exemplares = exemplares,
+            };
+
+            return detalhes.ToString(); 
+        }
+
+        public string? GetDetalhesUsuario(int codigoUsuario)
+        {
+            var usuario = GetUsuario(codigoUsuario);
+            if (usuario == null) return "Usuário não existe";
+
+            var emprestimoView =
+                from emprestimo in usuario.Emprestimos
+                join livro in Livros on emprestimo.CodigoLivro equals livro.Codigo
+                select new EmprestimoView
+                {
+                    CodigoExemplar = emprestimo.CodigoExemplar,
+                    CodigoUsuario = emprestimo.CodigoUsuario,
+                    CodigoLivro = emprestimo.CodigoLivro,
+                    SolicitacaoData = emprestimo.SolicitacaoData,
+                    DevolucaoData = emprestimo.DevolucaoData,
+                    NomeUsuario = usuario.Nome,
+                    NomeLivro = livro.Nome,
+                    Status = emprestimo.Status,
+                };
+
+            var detalhes = new DetalhesUsuarioView
+            {
+                CodigoUsuario = usuario.Codigo,
+                NomeUsuario = usuario.Nome,
+                Emprestimos = emprestimoView.ToList(),
+                Reservas = usuario.Reservas,
+            };
+
+            return detalhes.ToString(); 
+        }
+
+        public string? GetNotificacoes(int codigoUsuario)
+        {
+            var usuario = (UsuarioObservador)Usuarios.Find(usuario => usuario.Codigo == codigoUsuario);
+
+            if (usuario == null) return "Usuário não existe";
+
+            return $"O usuário {codigoUsuario} recebeu {usuario.NotificacoesRecebidas} notificações"; 
+        }
+
+
+        private List<Emprestimo> GetEmprestimosDoLivro(int codigoLivro)
+        {
+            var emprestimos = Usuarios.Select(usuario => usuario.Emprestimos);
+            var emprestimosDoLivro = new List<Emprestimo>();
+
+            foreach (List<Emprestimo> lista in emprestimos)
+            {
+                foreach (Emprestimo emprestimo in lista)
+                {
+                    if (emprestimo.CodigoLivro == codigoLivro)
+                        emprestimosDoLivro.Add(emprestimo);
+                }
+            }
+
+            return emprestimosDoLivro; 
+        }
+
+       
 
 
         private void InicializaUsuarios()
@@ -165,7 +253,7 @@ namespace SistemaBiblioteca.Usuario
 
             var livro201 = GetLivro(201);
             var exemplar20105 = new Exemplar(201, 05, EmprestimoStatus.Disponivel);
-            livro200.AdicionarExemplares(ref exemplar20105);
+            livro201.AdicionarExemplares(ref exemplar20105);
             exemplaresBiblioteca.Add(exemplar20105);
 
             var livro300 = GetLivro(300);

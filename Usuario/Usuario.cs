@@ -21,7 +21,7 @@ namespace SistemaBiblioteca.Usuario
             if (Reservas.Count < 3)
             {
                 var reserva = new Reserva(livro.Codigo, Codigo);
-                livro.Reservas.Add(reserva);
+                livro.AdicionaReserva(reserva);
                 Reservas.Add(reserva);
                 return "Reserva realizada com sucesso";
             }

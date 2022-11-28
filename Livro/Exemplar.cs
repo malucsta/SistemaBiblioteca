@@ -6,7 +6,6 @@ namespace SistemaBiblioteca.Usuario
     {
         public int CodigoLivro { get; set; }
         public int CodigoExemplar { get; set; }
-        //public List<Emprestimo> Emprestimos { get; set; } = new List<Emprestimo>();
         public EmprestimoStatus Status { get; set; }
 
         public Exemplar(int codigoLivro, int codigoExemplar, EmprestimoStatus status)
