@@ -11,6 +11,9 @@ if (usuario is not null && livro is not null)
     Console.WriteLine(livro.ToString());
     biblioteca.Emprestar(usuario.Codigo, 100);
     biblioteca.Emprestar(usuario.Codigo, 101);
+    biblioteca.Emprestar(usuario.Codigo, 300);
+    var result = biblioteca.Emprestar(usuario.Codigo, 400); //aqui ele bloqueou
+    Console.WriteLine(result);
     Console.WriteLine($"Número de emprestimos do usuário {usuario.Nome}: {usuario.Emprestimos.Count}");
 
     foreach (Emprestimo emprestimo in usuario.Emprestimos)
