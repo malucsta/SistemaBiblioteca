@@ -1,3 +1,3 @@
 ﻿using SistemaBiblioteca.Usuario;
 
-var biblioteca = new Biblioteca();
+var biblioteca = Biblioteca.GetInstancia();

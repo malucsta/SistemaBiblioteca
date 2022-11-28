@@ -1,11 +1,13 @@
-﻿namespace SistemaBiblioteca.Usuario
+﻿using SistemaBiblioteca.Livro;
+
+namespace SistemaBiblioteca.Usuario
 {
     public abstract class Usuario
     {
         public int Codigo { get; set; }
         public string Nome { get; set; }
-        public List<Reserva> Reservas { get; set; }
-        public List<Emprestimo> Emprestimos { get; set; }
+        public List<Reserva> Reservas { get; set; } = new List<Reserva>();
+        public List<Emprestimo> Emprestimos { get; set; } = new List<Emprestimo>();
 
         public Usuario(int codigo, string nome)
         {
@@ -13,63 +15,70 @@
             Nome = nome;
         }
 
-        public Tuple<bool, string, Emprestimo> Emprestar(Livro livro, List<Exemplar> exemplares)
+        public abstract string Emprestar(Livro livro);
+        public string Reservar(Livro livro)
         {
-            var reservasDoLivro = Reservas.FindAll(reserva => reserva.CodigoLivro == livro.Codigo);
-            var emprestimosDoLivro = Emprestimos.FindAll(emprestimo => emprestimo.CodigoLivro == livro.Codigo);
-            (Exemplar exemplar) = exemplares; 
-
-            if(emprestimosDoLivro.Length > 1)
+            if (Reservas.Count < 3)
             {
-                return (false, $"Emprestimo negado para o usuario ${Nome}! Já existe um empréstimo para o livro {livro.Nome}.");
-            }
-            var (podePegarEmprestimo, motivo) = this.PodePegarEmprestimo(livro, exemplares);
-            if(!podePegarEmprestimo)
-            {
-                return (false, motivo);
+                var reserva = new Reserva(livro.Codigo, Codigo);
+                livro.Reservas.Add(reserva);
+                Reservas.Add(reserva);
+                return "Reserva realizada com sucesso";
             }
 
+            return "O usuário já possui 3 ou mais reservas";
+        }
+        public string Devolver(ref Exemplar exemplar)
+        {
+            var codigoExemplar = exemplar.CodigoExemplar;
+            var emprestimo = Emprestimos.Find(emprestimo => emprestimo.CodigoExemplar == codigoExemplar);
 
+            if (emprestimo is null)
+                return "Não existem empréstimos em aberto para o exemplar a ser devolvido";
 
-            foreach (var emprestimo in Emprestimos)
-            {
-                int comparacao = DateTime.Compare(emprestimo.DevolucaoData, DateTime.now);
+            Emprestimos.Remove(emprestimo);
+            // TODO: remover o empréstimo da lista de empréstimos do livro
+            // TODO: alterar o status do exemplar para disponível
 
-                if(comparacao < 0)
-                {
-                    return (false, $"Emprestimo do livro {livro.Nome} negado para o usuario ${Nome}! Existem emprestimos não entregues.");
-                }
-            }
+            exemplar.Status = EmprestimoStatus.Disponivel;
+            return $"Exemplar {exemplar.CodigoExemplar} devolvido com sucesso";
 
-            if(reservasDoLivro.Length > 0)
-            {
-                Reservas.Remove(reservasDoLivro[0]);
-            }
-
-            DateTime devolucaoData = this.CalcularDataDevolucao();
-            Emprestimo emprestimo = new Emprestimo(livro.Codigo, exemplar.CodigoExemplar, Codigo, devolucaoData)
-            Emprestimos.Add(emprestimo);
-            return (true, $"Emprestimo do livro {livro.Nome} realizado com sucesso para o usuario ${Nome}!", emprestimo);      
-            
+        }
+        public bool ExisteReservaEmAberto(int codigoLivro)
+        {
+            var reservasEmAberto = Reservas.FindAll(reserva => reserva.CodigoLivro == codigoLivro);
+            return reservasEmAberto.Count > 0 ? true : false;
         }
 
-        public Tuple<bool, string, Emprestimo> Devolver(Livro livro)
+        protected string? EmprestarLivro(Livro livro)
         {
-            var emprestimos = Emprestimos.FindAll(emprestimo => emprestimo.CodigoLivro == livro.Codigo && emprestimo.Status == "ativo");
-            if(emprestimos.Length < 1)
+
+            var exemplarDisponivel = livro.Exemplares.Find(exemplar => exemplar.CodigoLivro == livro.Codigo
+                                                                       && exemplar.Status == EmprestimoStatus.Disponivel);
+
+            if (exemplarDisponivel is null) return null;
+
+            var emprestimo = new Emprestimo(livro.Codigo, exemplarDisponivel.CodigoExemplar, this.Codigo);
+
+            //adiciona o registro dos emprestimos
+            livro.Emprestimos.Add(emprestimo);
+            this.Emprestimos.Add(emprestimo);
+
+            //remove as reservas em aberto
+            var reservaEmAberto = livro.Reservas.Find(reserva => reserva.CodigoLivro == livro.Codigo && reserva.CodigoUsuario == Codigo);
+            if (reservaEmAberto is not null)
             {
-                return (false, $"Devolução negada para o usuario ${Nome}! Não exitem empréstimos ativos para o livro {livro.Nome}");
+                livro.Reservas.Remove(reservaEmAberto);
+                var reservaDoUsuario = Reservas.Find(reserva => reserva.CodigoLivro == livro.Codigo);
+                if (reservaDoUsuario is not null) Reservas.Remove(reservaDoUsuario);
             }
 
-            (Emprestimo emprestimoAtual) = emprestimos;
-            Emprestimos.Remove(emprestimoAtual);
-            emprestimoAtual.Status = "inativo";
-            Emprestimos.Add(emprestimoAtual);
-            return (true, $"Devolução realizada para o usuario ${Nome}! O livro {livro.Nome} foi devolvido!", emprestimoAtual);
-        }
+            //atualiza o status dos exemplares
+            livro.Exemplares.Remove(exemplarDisponivel);
+            exemplarDisponivel.Status = EmprestimoStatus.Indisponivel;
+            livro.Exemplares.Add(exemplarDisponivel);
 
-        public abstract string Reservar();
-        private abstract DateTime CalcularDataDevolucao();
-        private abstract Tuple<bool, string> PodePegarEmprestimo(Livro livro, List<Exemplar> exemplar);
+            return "Empréstimo realizado com sucesso";
+        }
     }
 }
